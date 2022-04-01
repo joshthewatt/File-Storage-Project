@@ -489,7 +489,7 @@ out:
 
   printf("passed\n");
   return 0;
-  
+
 }
 
 /*
@@ -528,7 +528,7 @@ int test_write_within_block() {
   // Making a copy of expected output to be written
   uint8_t to_write[JBOD_BLOCK_SIZE];
   memcpy(to_write, expected, JBOD_BLOCK_SIZE);
-  
+
   /* Write only the first SIZE bytes of the buffer |expected| at address 256. */
   if (mdadm_write(256, SIZE, to_write) != SIZE) {
     printf("failed: write failed\n");
@@ -582,7 +582,7 @@ int test_write_across_blocks() {
   // Making a copy of expected output to be written
   uint8_t to_write[SIZE];
   memcpy(to_write, expected, SIZE);
-  
+
   if (mdadm_write(327928, SIZE, to_write) != SIZE) {
     printf("failed: write failed\n");
     return 0;
@@ -645,7 +645,7 @@ int test_write_three_blocks() {
     0xbb, 0xcc,
   };
 
-	
+
   // Making a copy of expected output to be written
   uint8_t to_write[TEST3_SIZE];
   memcpy(to_write, expected, TEST3_SIZE);
@@ -702,7 +702,7 @@ int test_write_across_disks() {
   // Making a copy of expected output to be written
   uint8_t to_write[SIZE];
   memcpy(to_write, expected, SIZE);
- 
+
   if (mdadm_write(917496, SIZE, to_write) != SIZE) {
     printf("failed: write failed\n");
     goto out;
@@ -848,7 +848,7 @@ int test_cache_insert_lookup() {
   uint8_t out1[JBOD_BLOCK_SIZE];
   uint8_t out2[JBOD_BLOCK_SIZE];
   uint8_t out3[JBOD_BLOCK_SIZE];
-  
+
   int rc = cache_lookup(0, 0, out1);
   if (rc != -1) {
     printf("failed: lookup on an empty cache should fail but succeeded.\n");
@@ -924,7 +924,7 @@ int test_cache_update() {
 
   uint8_t in1[JBOD_BLOCK_SIZE] = { [0 ... JBOD_BLOCK_SIZE-1] = 0xaa };
   uint8_t in2[JBOD_BLOCK_SIZE] = { [0 ... JBOD_BLOCK_SIZE-1] = 0xbb };
-  
+
   uint8_t out[JBOD_BLOCK_SIZE];
 
   /* Insert an entry for disk 8, block 9, with value of in1 */
@@ -1016,7 +1016,7 @@ int test_cache_lru_lookup() {
   cache_lookup(1, 7, out); /* Update access time of 1, 7 */
   cache_lookup(3, 5, out); /* Update access time of 3, 5 */
   cache_lookup(8, 9, out); /* Update access time of 8, 9 */
-  
+
   /* At this point, the least recently used entry is 1, 7; therefore, the next
    * insert should evict it. */
 
