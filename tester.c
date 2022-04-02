@@ -860,8 +860,10 @@ int test_cache_insert_lookup() {
   rc += cache_insert(15, 8, in2);
   rc += cache_insert(7, 6, in3);
 
+
   if (rc != 3) {
     printf("failed: inserting 3 entries to a cache of size 3 should succeed but failed.\n");
+
     goto out;
   }
 
@@ -869,6 +871,7 @@ int test_cache_insert_lookup() {
   rc += cache_lookup(0, 0, out1);
   rc += cache_lookup(15, 8, out2);
   rc += cache_lookup(7, 6, out3);
+
 
   if (rc != 3) {
     printf("failed: lookup of 3 entries that exist in the cache should succeed but failed.\n");
@@ -936,10 +939,19 @@ int test_cache_update() {
   /* Make sure that we get the updated value. */
   cache_lookup(8, 9, out);
 
+  if (memcmp(out, in1, JBOD_BLOCK_SIZE) == 0 ){
+    printf("This works\n");
+  }
+
+  
+
   if (memcmp(out, in2, JBOD_BLOCK_SIZE) != 0) {
     printf("failed: inserting an existing entry should update its data but it did not.\n");
     goto out;
   }
+  // TEMP
+
+
   success = true;
 
 out:
@@ -974,6 +986,17 @@ int test_cache_lru_insert() {
   cache_insert(1, 7, in3);
   cache_insert(10, 13, in4);
 
+  /*
+  if (cache_lookup(3, 5, out) == -1) {
+    printf("in1 wrong");
+  }
+  if (cache_lookup(1, 7, out) == -1) {
+      printf("in2 wrong");
+  }
+  if (cache_lookup(10, 13, out) == -1) {
+      printf("in3 wrong");
+  }
+  */
   if (cache_lookup(8, 9, out) != -1) {
     printf("failed: the fourth insert into a cache of 3 entries should evict the first insert but it did not.\n");
     goto out;

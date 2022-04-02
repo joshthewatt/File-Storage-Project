@@ -2,6 +2,7 @@
 #include <string.h>
 #include <assert.h>
 
+#include "cache.h"
 #include "mdadm.h"
 #include "jbod.h"
 #include <stdbool.h>
@@ -29,6 +30,7 @@ int mdadm_mount(void) {
   uint8_t *block = NULL;
   if (jbod_operation(mount_op, (uint8_t *)block) == 0){ //0 means success
     MOUNTED = true;
+    //create_cache(4);
     return 1;
   }
   return -1; //failure
@@ -43,6 +45,7 @@ int mdadm_unmount(void) {
   uint8_t *block = NULL;
   if (jbod_operation(unmount_op, (uint8_t *)block) == 0){ //0 means success
     MOUNTED = false;
+    //cache_destroy();
     return 1;
   }
   return -1; //failure
@@ -86,10 +89,16 @@ int mdadm_read(uint32_t addr, uint32_t len, uint8_t *buf) {
         jbod_operation(seek_to_disk_op, (uint8_t *)block);
         block_location = 0;
       }
-      read_op = bit_line(JBOD_READ_BLOCK, 0, 0);
-      jbod_operation(read_op, spot); // reads block
+      // Check if in cache
+      if (cache_lookup(disk, block_location, spot) == -1){
+        read_op = bit_line(JBOD_READ_BLOCK, 0, 0);
+        jbod_operation(read_op, spot); // reads block
+        cache_insert(disk, block_location, spot);
+      }
+
       spot += 256; //move the pointer of buf_temp
       block_location = block_location + 1; //next block
+
     }
 
     // Copy into buffer desired bytes
@@ -136,8 +145,12 @@ int mdadm_write(uint32_t addr, uint32_t len, const uint8_t *buf) {
       jbod_operation(seek_to_disk_op, (uint8_t *)block);
       block_location_temp1 = 0;
     }
-    read_op = bit_line(JBOD_READ_BLOCK, 0, 0);
-    jbod_operation(read_op, spot); // reads block
+    if (cache_lookup(disk, block_location, spot) == -1){
+      read_op = bit_line(JBOD_READ_BLOCK, 0, 0);
+      jbod_operation(read_op, spot); // reads block
+      cache_insert(disk, block_location, spot);
+    }
+
     spot += 256; //move the pointer of buf_temp
     block_location_temp1 = block_location_temp1 + 1; //next block
   }
