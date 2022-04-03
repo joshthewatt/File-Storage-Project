@@ -56,7 +56,6 @@ int cache_lookup(int disk_num, int block_num, uint8_t *buf) {
   if (cache_initialized == false || cache_size == 0 || buf == NULL){
     return -1;
   }
-
   cache_entry_t temp;
   num_queries += 1;
   for (int k = 0; k < cache_items; k++){ // Loop through cache
@@ -86,10 +85,8 @@ void cache_update(int disk_num, int block_num, const uint8_t *buf) {
       clock += 1;
       temp.access_time = clock;
       break;
-
     }
   }
-
 }
 
 int cache_insert(int disk_num, int block_num, const uint8_t *buf) {
