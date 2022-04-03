@@ -45,7 +45,6 @@ int mdadm_unmount(void) {
   uint8_t *block = NULL;
   if (jbod_operation(unmount_op, (uint8_t *)block) == 0){ //0 means success
     MOUNTED = false;
-    //cache_destroy();
     return 1;
   }
   return -1; //failure
@@ -98,7 +97,6 @@ int mdadm_read(uint32_t addr, uint32_t len, uint8_t *buf) {
 
       spot += 256; //move the pointer of buf_temp
       block_location = block_location + 1; //next block
-
     }
 
     // Copy into buffer desired bytes

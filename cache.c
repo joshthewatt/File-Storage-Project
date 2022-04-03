@@ -21,8 +21,7 @@ static bool cache_initialized = false;
 int cache_create(int num_entries) { // num_entries is 2 - 4096
   // if called twice and cache_destroy not called
 
-  if (cache_initialized == true || num_entries <= 2 || num_entries >= 4096){
-    //printf("parameters \n");
+  if (cache_initialized == true || num_entries < 2 || num_entries > 4096){
     return -1;
   }
 
@@ -33,12 +32,10 @@ int cache_create(int num_entries) { // num_entries is 2 - 4096
 
   // if allocation unsuccessful
   if (cache == NULL){
-    //printf("not created\n");
     return -1;
   }
   else{
     cache_initialized = true;
-    //printf("cache created\n");
     return 1;
   }
 }
@@ -56,27 +53,20 @@ int cache_destroy(void) {
 }
 
 int cache_lookup(int disk_num, int block_num, uint8_t *buf) {
-  //printf("%d", disk_num);
-
   if (cache_initialized == false || cache_size == 0 || buf == NULL){
-    //printf("no cache\n");
     return -1;
   }
-  //printf("%d", cache_items);
 
   cache_entry_t temp;
   num_queries += 1;
-  for (int k = 0; k < cache_items; k++){ // Loop through cachei
+  for (int k = 0; k < cache_items; k++){ // Loop through cache
     temp = cache[k];
     if (temp.disk_num == disk_num && temp.block_num == block_num){ // If found in cache
 
       if (temp.block == NULL){
         return -1;
       }
-
-      //printf("lookup %d, %d, %d, %d \n",temp.disk_num, temp.block_num, temp.access_time, temp.valid);
       memcpy(buf, temp.block, 256); // copy block
-      //buf = temp.block;
       // Increments
       num_hits += 1;
       clock += 1;
@@ -89,14 +79,10 @@ int cache_lookup(int disk_num, int block_num, uint8_t *buf) {
 
 void cache_update(int disk_num, int block_num, const uint8_t *buf) {
   cache_entry_t temp;
-  //printf("%d", cache_items);
-  for (int k = 0; k < cache_items; k++){
+  for (int k = 0; k < cache_items; k++){ // Loop through to find the right entry
     temp = cache[k];
     if (temp.disk_num == disk_num && temp.block_num == block_num){ // Finding the disk and block
-      //printf("update %d, %d \n",temp.disk_num, temp.block_num);
-
-      memcpy(cache[k].block, buf, 256);
-      // increment clock?
+      memcpy(cache[k].block, buf, 256); // Copy in new block contents
       clock += 1;
       temp.access_time = clock;
       break;
@@ -107,9 +93,8 @@ void cache_update(int disk_num, int block_num, const uint8_t *buf) {
 }
 
 int cache_insert(int disk_num, int block_num, const uint8_t *buf) {
-
+  // Parameters
   if (cache_initialized == false || disk_num < 0 || disk_num > 16 || block_num < 0|| block_num > 256 || buf == NULL){
-    //printf("Insert failed\n");
     return -1;
   }
 
@@ -121,7 +106,6 @@ int cache_insert(int disk_num, int block_num, const uint8_t *buf) {
   insert.block_num = block_num;
   memcpy(insert.block, buf, 256);
   insert.access_time = clock;
-  //printf("insert %d, %d, %d, %d\n", insert.disk_num, insert.block_num, insert.access_time, insert.valid);
 
   // Check if insert already exists, if so Update
   cache_entry_t temp;
@@ -132,8 +116,7 @@ int cache_insert(int disk_num, int block_num, const uint8_t *buf) {
       return -1;
     }
   }
-
-  //printf("cache size %d, cache items %d\n", cache_size, cache_items);
+  // LRU alg
   if (cache_size == cache_items){ //where cache is filled LRU
     int lru_time = cache[0].access_time;
     for (int k = 1; k < cache_size; k++){
@@ -141,6 +124,7 @@ int cache_insert(int disk_num, int block_num, const uint8_t *buf) {
         lru_time = cache[k].access_time;
       }
     }
+    // Find place to insert
     for (int k = 0; k < cache_size; k++){
       if (cache[k].access_time == lru_time){
         cache[k] = insert;
@@ -148,10 +132,8 @@ int cache_insert(int disk_num, int block_num, const uint8_t *buf) {
     }
     return 1;
   }
+  // Regular insert if not filled
   else{ // Cache not filled, just put in
-    //printf("%c", insert.block);
-    //cache[cache_items].valid = true;
-
     cache[cache_items] = insert;
     cache_items += 1;
     return 1;
