@@ -60,7 +60,7 @@ int cache_lookup(int disk_num, int block_num, uint8_t *buf) {
   num_queries += 1;
   for (int k = 0; k < cache_items; k++){ // Loop through cache
     temp = cache[k];
-    if (temp.disk_num == disk_num && temp.block_num == block_num){ // If found in cache
+    if (temp.disk_num == disk_num && temp.block_num == block_num && temp.valid == true){ // If found in cache
 
       if (temp.block == NULL){
         return -1;
@@ -80,7 +80,7 @@ void cache_update(int disk_num, int block_num, const uint8_t *buf) {
   cache_entry_t temp;
   for (int k = 0; k < cache_items; k++){ // Loop through to find the right entry
     temp = cache[k];
-    if (temp.disk_num == disk_num && temp.block_num == block_num){ // Finding the disk and block
+    if (temp.disk_num == disk_num && temp.block_num == block_num && temp.valid == true){ // Finding the disk and block
       memcpy(cache[k].block, buf, 256); // Copy in new block contents
       clock += 1;
       temp.access_time = clock;
@@ -108,7 +108,7 @@ int cache_insert(int disk_num, int block_num, const uint8_t *buf) {
   cache_entry_t temp;
   for (int k = 0; k < cache_items; k++){
     temp = cache[k];
-    if (temp.disk_num == disk_num && temp.block_num == block_num ){
+    if (temp.disk_num == disk_num && temp.block_num == block_num && temp.valid == true){
       cache_update(disk_num, block_num, buf);
       return -1;
     }
