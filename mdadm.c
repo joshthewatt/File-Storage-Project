@@ -89,14 +89,25 @@ int mdadm_read(uint32_t addr, uint32_t len, uint8_t *buf) {
         block_location = 0;
       }
       // Check if in cache
-      if (cache_lookup(disk, block_location, spot) == -1){
+      if (1 == 1){
+      //if (cache_lookup(disk, block_location, spot) == -1){
         read_op = bit_line(JBOD_READ_BLOCK, 0, 0);
         jbod_operation(read_op, spot); // reads block
-        cache_insert(disk, block_location, spot);
+
+        //spot += 256; //move the pointer of buf_temp
+
+        block_location = block_location + 1; //next block
       }
 
+      else{
+        block_location = block_location + 1;
+        seek_to_block_op  = bit_line(JBOD_SEEK_TO_BLOCK, 0, block_location);
+        jbod_operation(seek_to_block_op, (uint8_t *)block);
+      }
+
+      cache_insert(disk, block_location - 1, spot);
       spot += 256; //move the pointer of buf_temp
-      block_location = block_location + 1; //next block
+      //block_location = block_location + 1; //next block
     }
 
     // Copy into buffer desired bytes
@@ -143,14 +154,23 @@ int mdadm_write(uint32_t addr, uint32_t len, const uint8_t *buf) {
       jbod_operation(seek_to_disk_op, (uint8_t *)block);
       block_location_temp1 = 0;
     }
-    if (cache_lookup(disk, block_location, spot) == -1){
+
+    if (cache_lookup(disk, block_location_temp1, spot) == -1){
+    //if (1 == 1){
       read_op = bit_line(JBOD_READ_BLOCK, 0, 0);
       jbod_operation(read_op, spot); // reads block
-      cache_insert(disk, block_location, spot);
+
+      block_location_temp1 = block_location_temp1 + 1; //next block
+    }
+    else{ // wrong
+      block_location_temp1 = block_location_temp1 + 1;
+      seek_to_block_op  = bit_line(JBOD_SEEK_TO_BLOCK, 0, block_location_temp1);
+      jbod_operation(seek_to_block_op, (uint8_t *)block);
     }
 
+    cache_insert(disk, block_location_temp1 - 1, spot);
     spot += 256; //move the pointer of buf_temp
-    block_location_temp1 = block_location_temp1 + 1; //next block
+    //block_location_temp1 = block_location_temp1 + 1; //next block
   }
 
 
@@ -190,8 +210,10 @@ int mdadm_write(uint32_t addr, uint32_t len, const uint8_t *buf) {
       jbod_operation(seek_to_disk_op, (uint8_t *)block);
       block_location = 0;
     }
+    //cache_update(disk, block_location, spot_1);
     write_op = bit_line(JBOD_WRITE_BLOCK, 0, 0); // write operation
     jbod_operation(write_op, spot_1);
+    //cache_insert(disk, block_location, spot_1);
     spot_1 += 256; //moves up buffer 1 block
     block_location = block_location + 1; // moves block up a location
   }
